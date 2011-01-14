@@ -1,3 +1,4 @@
 /raytrace
 /obj/*.o
 *~
+out.png
