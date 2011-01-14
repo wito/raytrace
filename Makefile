@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -Iinc
-LFLAGS=
+LFLAGS=-lpng
 
 TDIR=
 TODIR=
