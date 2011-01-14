@@ -9,6 +9,11 @@ typedef struct {
   double z;
 } vector;
 
+typedef struct {
+  vector location;
+  vector direction;
+} Line;
+
 vector vectorCreate(double, double, double);
 
 double vectorLength(vector);
@@ -23,5 +28,8 @@ vector vectorXProduct(vector,vector);
 double vectorDotProduct(vector,vector);
 
 vector vectorMatrixMultiply(vector,matrix);
+
+Line *lineCreate(vector, vector);
+void lineDestroy(Line *);
 
 #endif // VECTOR_H

@@ -1,6 +1,7 @@
 #include "vector.h"
 
 #include <math.h>
+#include <stdlib.h>
 
 vector vectorCreate(double x, double y, double z) {
   return (vector){ x, y, z };
@@ -47,4 +48,18 @@ vector vectorMatrixMultiply(vector self, matrix m) {
     self.x * m.b1 + self.y * m.b2 + self.z * m.b3 + m.b4,
     self.x * m.c1 + self.y * m.c2 + self.z * m.c3 + m.c4
   );
+}
+
+
+Line *lineCreate(vector l, vector d) {
+  Line *self = malloc(sizeof(Line));
+
+  self->location = l;
+  self->direction = d;
+
+  return self;
+}
+
+void lineDestroy(Line *self) {
+  free(self);
 }
