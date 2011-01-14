@@ -24,7 +24,7 @@ Intersection *sphereIntersect(Primitive *s, Line *ray) {
   c -= self->radius * self->radius;
   bb4ac = b * b - 4 * a * c;
 
-  if (abs(a) < EPS || bb4ac < 0) {
+  if (fabs(a) < EPS || bb4ac < 0) {
     return NULL;
   }
 
