@@ -40,3 +40,11 @@ vector vectorXProduct(vector a, vector b) {
 double vectorDotProduct(vector a,vector b) {
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
+
+vector vectorMatrixMultiply(vector self, matrix m) {
+  return vectorCreate(
+    self.x * m.a1 + self.y * m.a2 + self.z * m.a3 + m.a4,
+    self.x * m.b1 + self.y * m.b2 + self.z * m.b3 + m.b4,
+    self.x * m.c1 + self.y * m.c2 + self.z * m.c3 + m.c4
+  );
+}

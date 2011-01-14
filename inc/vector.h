@@ -1,6 +1,8 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include "matrix.h"
+
 typedef struct {
   double x;
   double y;
@@ -19,5 +21,7 @@ vector vectorDivide(vector,double);
 
 vector vectorXProduct(vector,vector);
 double vectorDotProduct(vector,vector);
+
+vector vectorMatrixMultiply(vector,matrix);
 
 #endif // VECTOR_H
