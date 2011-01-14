@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Iinc
+CFLAGS=-Wall -Iinc -std=c99
 LFLAGS=-lpng
 
 TDIR=
@@ -9,7 +9,7 @@ ODIR=obj
 _TEST = 
 TEST = $(patsubst %,$(TODIR)/%.test,$(_TEST))
 
-_OBJ = raytrace.o vector.o matrix.o primitive.o sphere.o
+_OBJ = raytrace.o vector.o matrix.o primitive.o sphere.o plane.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 raytrace: $(OBJ)
@@ -21,4 +21,4 @@ $(ODIR)/%.o: src/%.c $(DEPS)
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)/*.o xmas
+	rm -f $(ODIR)/*.o raytrace out.png
