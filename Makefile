@@ -9,7 +9,7 @@ ODIR=obj
 _TEST = 
 TEST = $(patsubst %,$(TODIR)/%.test,$(_TEST))
 
-_OBJ = raytrace.o vector.o matrix.o primitive.o
+_OBJ = raytrace.o vector.o matrix.o primitive.o sphere.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 raytrace: $(OBJ)

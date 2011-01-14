@@ -10,8 +10,8 @@ typedef struct {
 } vector;
 
 typedef struct {
-  vector location;
-  vector direction;
+  vector start;
+  vector end;
 } Line;
 
 vector vectorCreate(double, double, double);

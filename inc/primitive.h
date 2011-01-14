@@ -8,6 +8,8 @@ typedef struct primitive Primitive;
 typedef struct {
   Primitive *primitive;
   vector intersectionPoint;
+
+  double distance;
 } Intersection;
 
 typedef Intersection *(*intersectFunction)(Primitive *, Line *);
@@ -16,6 +18,8 @@ typedef vector(*normalFunction)(Primitive *, Intersection *);
 struct primitive {
   intersectFunction intersect;
   normalFunction normal;
+
+  void *material;
 };
 
 Intersection *primitiveIntersect(Primitive *, Line *);

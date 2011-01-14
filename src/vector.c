@@ -54,8 +54,8 @@ vector vectorMatrixMultiply(vector self, matrix m) {
 Line *lineCreate(vector l, vector d) {
   Line *self = malloc(sizeof(Line));
 
-  self->location = l;
-  self->direction = d;
+  self->start = l;
+  self->end = d;
 
   return self;
 }
