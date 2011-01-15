@@ -45,6 +45,7 @@ Intersection *sphereIntersect(Primitive *s, Line *ray) {
   retval->primitive = s;
   retval->intersectionPoint = line;
   retval->distance = vectorLength(line);
+  retval->direction = ((mu1 > 0.0 && mu1 < 1.0) && (mu2 > 0.0 && mu2 < 1.0))?1:-1;
 
   return retval;
 }

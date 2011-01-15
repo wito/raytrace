@@ -11,6 +11,8 @@ typedef struct {
   vector intersectionPoint;
 
   double distance;
+
+  int direction;  
 } Intersection;
 
 typedef Intersection *(*intersectFunction)(Primitive *, Line *);
