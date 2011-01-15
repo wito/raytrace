@@ -2,6 +2,7 @@
 #define PRIMITIVE_H
 
 #include "vector.h"
+#include "material.h"
 
 typedef struct primitive Primitive;
 
@@ -19,7 +20,7 @@ struct primitive {
   intersectFunction intersect;
   normalFunction normal;
 
-  void *material;
+  Material *material;
 };
 
 Intersection *primitiveIntersect(Primitive *, Line *);
