@@ -12,7 +12,7 @@ Intersection *planeIntersect(Primitive *p, Line *ray) {
 
   double t = vectorDotProduct(vectorSubtraction(Q, E), N) / vectorDotProduct(N,D);
 
-  if (t <= 0) {
+  if (t <= 0.0 || t >= 1.0) {
     return NULL;
   }
 

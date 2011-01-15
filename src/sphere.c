@@ -33,6 +33,10 @@ Intersection *sphereIntersect(Primitive *s, Line *ray) {
 
   double mu = (mu1 >= mu2)?mu2:mu1;
 
+  if (mu > 1.0 || mu < 0.0) {
+    return NULL;
+  }
+
   vector line = vectorMultiply(dp, mu);
   line = vectorAddition(line,ray->start);
 
