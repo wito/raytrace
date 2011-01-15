@@ -42,6 +42,11 @@ double vectorDotProduct(vector a,vector b) {
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
+vector vectorCProduct(vector a, vector b) {
+  return vectorCreate(a.x * b.x, a.y * b.y, a.z * b.z);
+}
+
+
 vector vectorMatrixMultiply(vector self, matrix m) {
   return vectorCreate(
     self.x * m.a1 + self.y * m.a2 + self.z * m.a3 + m.a4,

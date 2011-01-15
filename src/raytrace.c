@@ -11,6 +11,110 @@
 #define WIDTH 1280
 #define HEIGHT 800
 
+#define EPS 0.0005
+
+typedef struct light {
+  vector location;
+  vector color;
+  double intensity;
+} Light;
+
+Line *makeLine(vector start, vector end) {
+  Line *retval = malloc(sizeof(Line));
+  
+  retval->start = start;
+  retval->end = end;
+  
+  return retval;
+}
+
+vector rayTrace(Line *ray, Primitive **primitives, Light **lights) {
+  Intersection *bestIntersection = NULL;
+  vector retval = vectorCreate(0.0, 0.0, 0.0);
+  
+  for (int p = 0; p < 3; p++) {
+    Intersection *thisIntersection = primitiveIntersect(primitives[p], ray);
+    if (!bestIntersection) {
+      bestIntersection = thisIntersection;
+      continue;
+    }
+    if (thisIntersection && thisIntersection->distance < bestIntersection->distance) {
+      free(bestIntersection);
+      bestIntersection = thisIntersection;
+    }
+  }
+  
+  if (bestIntersection) {
+    vector mcolor = vectorCreate(0.0, 0.0, 0.0);
+    Primitive *primitive = bestIntersection->primitive;
+    Material *material = primitive->material;
+
+    vector N = primitiveNormal(primitive, bestIntersection);
+    vector V = vectorUnit(vectorSubtraction(ray->end, ray->start));
+    
+    for (int l = 0; l < 2; l++) {
+      Light *light = lights[l];
+      vector lvec = vectorSubtraction(light->location, bestIntersection->intersectionPoint);
+      
+      vector pcolor = material->color;
+      vector lcolor = light->color;
+
+      Intersection *linter = NULL;
+      Line *lightRay = makeLine(bestIntersection->intersectionPoint, light->location);
+      
+      for (int p = 0; p < 3; p++) {
+        if (primitives[p] == primitive)
+          continue;
+        if ((linter = primitiveIntersect(primitives[p], lightRay)))
+          break;
+      }
+      
+      free(lightRay);
+      
+      if (!linter) {
+        if (material->specular > 0.0) {
+          float sintensity = 0.0;
+          
+          vector L = vectorUnit(lvec);          
+          vector R = vectorSubtraction(L, vectorMultiply(N, 2 * vectorDotProduct(L,N)));
+          
+          float dot = vectorDotProduct(V, R);
+          
+          if (dot > 0.0) {
+            sintensity = pow(dot, 20) * material->specular;
+          }
+          
+          if (sintensity > 0.0) {
+            mcolor = vectorAddition(mcolor, vectorMultiply(lcolor, sintensity));
+          }
+        }
+
+        if (material->diffuse > 0.0) {
+          float dintensity = material->diffuse * vectorDotProduct(vectorUnit(lvec), primitive->normal(bestIntersection->primitive, bestIntersection));
+
+          if (dintensity > 0.0) {
+            mcolor = vectorAddition(mcolor, vectorMultiply(vectorCProduct(pcolor, lcolor), dintensity));
+          }
+        }
+      }
+      
+      free(linter);
+    }
+    
+    if (material->reflection > 0.0) {
+      vector R = vectorSubtraction(V, vectorMultiply(N, 2 * vectorDotProduct(V,N)));
+      Line *rline = makeLine(vectorAddition(bestIntersection->intersectionPoint, vectorMultiply(R, EPS)), vectorAddition(bestIntersection->intersectionPoint, vectorMultiply(R, 30)));
+      
+      vector rcolor = rayTrace(rline, primitives, lights);
+      
+      mcolor = vectorAddition(mcolor, vectorMultiply(rcolor, material->reflection));
+    }
+
+    retval = mcolor;
+  }  
+  return retval;
+}
+
 void writePNG (png_bytepp imageBuffer, png_uint_32 width, png_uint_32 height, int iteration) {
   const char *fname = "out.png";
   
@@ -33,7 +137,7 @@ Line *createLine(vector camera, png_uint_32 x, png_uint_32 y) {
 
   retval->start = camera;
 
-  vector planePoint = vectorCreate(-4.0 + 8.0 * ((double)x / (double)WIDTH), 0.0, 5.0 - 5.0 * ((double)y / (double)HEIGHT));
+  vector planePoint = vectorCreate(-8.0 + 16.0 * ((double)x / (double)WIDTH), 0.0, 10.0 - 10.0 * ((double)y / (double)HEIGHT));
   vector dir = vectorSubtraction(planePoint, camera);
 
   retval->end = vectorAddition(camera, vectorMultiply(dir,50));
@@ -41,25 +145,10 @@ Line *createLine(vector camera, png_uint_32 x, png_uint_32 y) {
   return retval;
 }
 
-Line *makeLine(vector start, vector end) {
-  Line *retval = malloc(sizeof(Line));
-
-  retval->start = start;
-  retval->end = end;
-
-  return retval;
-}
-
-typedef struct light {
-  vector location;
-  vector color;
-  double intensity;
-} Light;
-
 int main (int argc, const char **argv, const char **env) {
   Light *light = malloc(sizeof(Light));
 
-  light->location = vectorCreate(3.0, 3.0, 5.5);
+  light->location = vectorCreate(0.0, 10.0, 10.0);
   light->color = vectorCreate(1.0, 1.0, 1.0);
   light->intensity = 1.0;
 
@@ -69,7 +158,7 @@ int main (int argc, const char **argv, const char **env) {
 
   light = malloc(sizeof(Light));
 
-  light->location = vectorCreate(-3.0, 3.0, 4.0);
+  light->location = vectorCreate(0.0, 3.0, 10.0);
   light->color = vectorCreate(1.0, 1.0, 1.0);
   light->intensity = 1.0;
 
@@ -77,31 +166,31 @@ int main (int argc, const char **argv, const char **env) {
 
   Primitive **primitives = calloc(3,sizeof(Primitive *));
 
-  primitives[0] = createSphere((vector){3.0, 3.0, 2.5}, 1.1);
-  primitives[1] = createSphere((vector){-3.0, 4.0, 2.0}, 1.2);
+  primitives[0] = createSphere((vector){3.0, 7.0, 2.0}, 2.0);
+  primitives[1] = createSphere((vector){0.0, 10.0, 1.9}, 1.9);
   primitives[2] = createPlane(vectorCreate(0.0, 0.0, 1.0), vectorCreate(0.0, 0.0, 0.0));
 
   primitives[0]->material = malloc(sizeof(Material));
   primitives[1]->material = malloc(sizeof(Material));
   primitives[2]->material = malloc(sizeof(Material));
 
-  primitives[0]->material->color = vectorCreate(1.0, 0.0, 0.0);
-  primitives[1]->material->color = vectorCreate(0.0, 1.0, 0.0);
-  primitives[2]->material->color = vectorCreate(1.0, 0.0, 1.0);
+  primitives[0]->material->color = vectorCreate(1.0, 1.0, 1.0);
+  primitives[1]->material->color = vectorCreate(0.0, 0.0, 0.0);
+  primitives[2]->material->color = vectorCreate(0.0, 0.7, 0.0);
 
-  primitives[0]->material->specular = 1.0;
-  primitives[1]->material->specular = 0.5;
+  primitives[0]->material->specular = 0.7;
+  primitives[1]->material->specular = 0.4;
   primitives[2]->material->specular = 0.0;
 
-  primitives[0]->material->diffuse = 0.2;
-  primitives[1]->material->diffuse = 0.5;
+  primitives[0]->material->diffuse = 1.0;
+  primitives[1]->material->diffuse = 1.0;
   primitives[2]->material->diffuse = 1.0;
 
-  primitives[0]->material->reflection = 0.0;
+  primitives[0]->material->reflection = 0.05;
   primitives[1]->material->reflection = 0.0;
   primitives[2]->material->reflection = 0.0;
 
-  vector camera = vectorCreate(0.0, -5.0, 2.5);
+  vector camera = vectorCreate(0.0, -5.0, 5.0);
 
   png_uint_32 height = HEIGHT, width = WIDTH;
 
@@ -120,83 +209,15 @@ int main (int argc, const char **argv, const char **env) {
     for (x = 0; x < WIDTH; x++) {
       Line *ray = createLine(camera, x, y);
 
-      Intersection *bestIntersection = NULL;
-
-      for (int p = 0; p < 3; p++) {
-        Intersection *thisIntersection = primitiveIntersect(primitives[p], ray);
-        if (!bestIntersection) {
-          bestIntersection = thisIntersection;
-          continue;
-        }
-        if (thisIntersection && thisIntersection->distance < bestIntersection->distance) {
-          free(bestIntersection);
-          bestIntersection = thisIntersection;
-        }
-      }
-
-      png_byte red,green,blue;
-
-      if (bestIntersection) {
-        double lighting = 0.0;
-        for (int l = 0; l < 2; l++) {
-          light = lights[l];
-          vector lvec = vectorSubtraction(light->location, bestIntersection->intersectionPoint);
+      vector color = rayTrace(ray, primitives, lights);
       
-          Intersection *linter = NULL;
-          Line *lightRay = makeLine(bestIntersection->intersectionPoint, light->location);
+      if (color.x >= 1.0) color.x = 1.0;
+      if (color.y >= 1.0) color.y = 1.0;
+      if (color.z >= 1.0) color.z = 1.0;
       
-          for (int p = 0; p < 3; p++) {
-            if (primitives[p] == bestIntersection->primitive)
-              continue;
-            if ((linter = primitiveIntersect(primitives[p], lightRay)))
-              break;
-          }
-      
-          free(lightRay);
-      
-          if (!linter) {
-            float sintensity = 0.0;
-      
-            vector V = vectorUnit(vectorSubtraction(ray->end, ray->start));
-            vector N = primitiveNormal(bestIntersection->primitive, bestIntersection);
-      
-            vector L = vectorUnit(lvec);
-      
-            vector R = vectorSubtraction(L, vectorMultiply(N, 2 * vectorDotProduct(L,N)));
-      
-            float dot = vectorDotProduct(V, R);
-      
-            if (dot > 0.0) {
-              sintensity = pow(dot, 20) * bestIntersection->primitive->material->specular;
-            }
-      
-            float dintensity = bestIntersection->primitive->material->diffuse * vectorDotProduct(vectorUnit(lvec), bestIntersection->primitive->normal(bestIntersection->primitive, bestIntersection));
-      
-            lighting += dintensity + sintensity;
-          }
-      
-          free(linter);
-        }
-
-        if (lighting > 1.0) {
-          lighting = 1.0;
-        }
-        if (lighting < 0.0) {
-          lighting = 0.0;
-        }
-
-        red = bestIntersection->primitive->material->color.x * lighting * 255;
-        green = bestIntersection->primitive->material->color.y * lighting * 255;
-        blue = bestIntersection->primitive->material->color.z * lighting * 255;
-      } else {
-        red = 0;
-        green = 0;
-        blue = 0;
-      }
-            
-      imageBuffer[y][x * 3] = red;
-      imageBuffer[y][x * 3 + 1] = green;
-      imageBuffer[y][x * 3 + 2] = blue;
+      imageBuffer[y][x * 3] = color.x * 255;
+      imageBuffer[y][x * 3 + 1] = color.y * 255;
+      imageBuffer[y][x * 3 + 2] = color.z * 255;
     }
   
   }

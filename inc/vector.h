@@ -27,6 +27,8 @@ vector vectorDivide(vector,double);
 vector vectorXProduct(vector,vector);
 double vectorDotProduct(vector,vector);
 
+vector vectorCProduct(vector,vector);
+
 vector vectorMatrixMultiply(vector,matrix);
 
 Line *lineCreate(vector, vector);
