@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-Wall -Iinc -std=c99
-LFLAGS=-lpng
+CFLAGS=-Wall -Iinc -std=c99 -I/usr/X11/include
+LFLAGS=-L/usr/X11/lib -lpng
 
 TDIR=
 TODIR=

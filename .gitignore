@@ -2,3 +2,4 @@
 /obj/*.o
 *~
 out.png
+.DS_Store
