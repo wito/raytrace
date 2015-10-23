@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include <png.h>
+#include <zlib.h>
 
 #include "primitive.h"
 #include "sphere.h"
